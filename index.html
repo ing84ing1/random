@@ -2,62 +2,148 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>สุ่มกิจกรรม</title>
+<title>วงล้อสุ่มชีวิต</title>
 
 <style>
+
 body{
-    font-family: Arial;
-    text-align:center;
-    background:#f0f0f0;
-    margin-top:100px;
+font-family: Arial;
+background: linear-gradient(135deg,#6dd5ed,#2193b0);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+.container{
+background:white;
+padding:30px;
+border-radius:20px;
+text-align:center;
+width:320px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+h1{
+margin-bottom:20px;
 }
 
 button{
-    font-size:22px;
-    padding:15px 30px;
-    border:none;
-    border-radius:12px;
-    background:#4CAF50;
-    color:white;
-    cursor:pointer;
+background:#ff6b6b;
+border:none;
+color:white;
+padding:15px 25px;
+font-size:18px;
+border-radius:12px;
+cursor:pointer;
+}
+
+button:hover{
+background:#ff5252;
 }
 
 #result{
-    margin-top:40px;
-    font-size:36px;
-    font-weight:bold;
+margin-top:25px;
+font-size:22px;
+font-weight:bold;
 }
+
 </style>
 </head>
 
 <body>
 
-<h1>สุ่มกิจกรรมตอนนี้</h1>
+<div class="container">
 
-<button onclick="randomActivity()">สุ่ม!</button>
+<h1>🎡 วงล้อสุ่มชีวิต</h1>
+
+<button onclick="spin()">หมุนวงล้อ!</button>
 
 <div id="result"></div>
+
+</div>
 
 <script>
 
 let activities = [
-"ทำงาน 25 นาที",
-"ทำงาน 10 นาที",
-"พัก 5 นาที",
-"พัก 10 นาที",
-"เล่นมือถือ 5 นาที",
-"ลุกไปเดิน",
-"ดื่มน้ำ",
-"ฟังเพลง 1 เพลง",
-"ยืดเส้น",
-"กลับไปทำงาน!"
+
+"📚 ทำงาน 25 นาที",
+"📚 ทำงาน 15 นาที",
+"📚 ทำงาน 10 นาที",
+"🔥 กลับไปทำงานเดี๋ยวนี้",
+"🧠 ทำการบ้าน 1 ข้อ",
+"📊 ทำรายงาน 1 หน้า",
+"📝 เขียนโน้ต 1 ย่อหน้า",
+
+"😴 พัก 5 นาที",
+"😴 พัก 10 นาที",
+"🛏 นอนพักสายตา 3 นาที",
+
+"📱 เล่นมือถือ 5 นาที",
+"📱 เล่นมือถือ 3 นาที",
+"🎮 เล่นเกม 1 ตา",
+
+"🚶 ลุกไปเดิน",
+"🚶 เดิน 2 นาที",
+"🧘 ยืดเส้น",
+"💪 วิดพื้น 10 ครั้ง",
+
+"💧 ดื่มน้ำ",
+"🍎 ไปหาอะไรกิน",
+"🍪 กินขนม 1 ชิ้น",
+"☕ ชงเครื่องดื่ม",
+
+"🎵 ฟังเพลง 1 เพลง",
+"🎵 ฟังเพลง 2 เพลง",
+"🎧 เปิดเพลงแล้วกลับไปทำงาน",
+
+"🧹 เก็บโต๊ะทำงาน",
+"🧹 จัดของ 1 อย่าง",
+
+"🧠 คิดไอเดียใหม่ 1 อย่าง",
+"📖 อ่านอะไรสั้น ๆ 5 นาที",
+
+"😂 ดู meme 2 นาที",
+"😂 เปิด TikTok 3 นาที",
+
+"🔥 ทำงานต่ออีก 30 นาที",
+"🔥 ทำงานต่ออีก 15 นาที",
+
+"🎲 สุ่มใหม่อีกครั้ง",
+"🎲 สุ่มอีกทีถ้าไม่พอใจ",
+
+"😈 ไม่มีพัก ทำงานต่อ",
+"😈 ทำงานเพิ่มอีก 10 นาที"
+
 ];
 
-function randomActivity(){
+"📚 ทำงาน 25 นาที",
+"🧠 ทำงาน 10 นาที",
+"😴 พัก 5 นาที",
+"📱 เล่นมือถือ 5 นาที",
+"🚶 ลุกไปเดิน",
+"💧 ดื่มน้ำ",
+"🎵 ฟังเพลง 1 เพลง",
+"🧘 ยืดเส้น",
+"🔥 กลับไปทำงานเดี๋ยวนี้",
+"🍪 ไปหาอะไรกิน"
+
+];
+
+function spin(){
+
+let result = document.getElementById("result");
+
+result.innerHTML = "กำลังสุ่ม...";
+
+setTimeout(function(){
 
 let random = Math.floor(Math.random()*activities.length);
 
-document.getElementById("result").innerText = activities[random];
+result.innerHTML = activities[random];
+
+},1000);
 
 }
 
