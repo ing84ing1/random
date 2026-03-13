@@ -2,51 +2,47 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>วงล้อสุ่มชีวิต</title>
+<title>วงล้อสุ่มกิจกรรม</title>
 
 <style>
 
 body{
 font-family: Arial;
-background: linear-gradient(135deg,#6dd5ed,#2193b0);
+background:linear-gradient(135deg,#667eea,#764ba2);
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 margin:0;
+color:white;
+text-align:center;
 }
 
 .container{
-background:white;
+background:rgba(255,255,255,0.1);
 padding:30px;
 border-radius:20px;
-text-align:center;
-width:320px;
-box-shadow:0 10px 25px rgba(0,0,0,0.2);
 }
 
-h1{
-margin-bottom:20px;
+canvas{
+background:white;
+border-radius:50%;
 }
 
 button{
-background:#ff6b6b;
-border:none;
-color:white;
-padding:15px 25px;
+margin-top:20px;
+padding:12px 30px;
 font-size:18px;
-border-radius:12px;
+border:none;
+border-radius:10px;
+background:#ff6b6b;
+color:white;
 cursor:pointer;
 }
 
-button:hover{
-background:#ff5252;
-}
-
 #result{
-margin-top:25px;
-font-size:22px;
-font-weight:bold;
+margin-top:15px;
+font-size:20px;
 }
 
 </style>
@@ -56,9 +52,13 @@ font-weight:bold;
 
 <div class="container">
 
-<h1>🎡 วงล้อสุ่มชีวิต</h1>
+<h2>🎡 วงล้อสุ่มชีวิต</h2>
 
-<button onclick="spin()">หมุนวงล้อ!</button>
+<canvas id="wheel" width="320" height="320"></canvas>
+
+<br>
+
+<button onclick="spin()">หมุนวงล้อ</button>
 
 <div id="result"></div>
 
@@ -69,83 +69,149 @@ font-weight:bold;
 let activities = [
 
 "📚 ทำงาน 25 นาที",
+"📚 ทำงาน 20 นาที",
 "📚 ทำงาน 15 นาที",
 "📚 ทำงาน 10 นาที",
-"🔥 กลับไปทำงานเดี๋ยวนี้",
+"🔥 ทำงานต่อทันที",
 "🧠 ทำการบ้าน 1 ข้อ",
-"📊 ทำรายงาน 1 หน้า",
+"🧠 ทำงานอีก 1 task",
 "📝 เขียนโน้ต 1 ย่อหน้า",
+"📊 ทำรายงาน 1 หน้า",
+"📖 อ่านหนังสือ 5 นาที",
 
 "😴 พัก 5 นาที",
 "😴 พัก 10 นาที",
-"🛏 นอนพักสายตา 3 นาที",
+"🛏 พักสายตา 3 นาที",
 
-"📱 เล่นมือถือ 5 นาที",
 "📱 เล่นมือถือ 3 นาที",
+"📱 เล่นมือถือ 5 นาที",
+"😂 ดู meme",
+"😂 เปิด TikTok 2 นาที",
 "🎮 เล่นเกม 1 ตา",
 
 "🚶 ลุกไปเดิน",
 "🚶 เดิน 2 นาที",
+"🚶 เดินรอบห้อง",
 "🧘 ยืดเส้น",
 "💪 วิดพื้น 10 ครั้ง",
 
 "💧 ดื่มน้ำ",
-"🍎 ไปหาอะไรกิน",
-"🍪 กินขนม 1 ชิ้น",
+"🍎 กินผลไม้",
+"🍪 กินขนม",
 "☕ ชงเครื่องดื่ม",
 
 "🎵 ฟังเพลง 1 เพลง",
 "🎵 ฟังเพลง 2 เพลง",
-"🎧 เปิดเพลงแล้วกลับไปทำงาน",
+"🎧 เปิดเพลงแล้วทำงานต่อ",
 
-"🧹 เก็บโต๊ะทำงาน",
+"🧹 เก็บโต๊ะ",
 "🧹 จัดของ 1 อย่าง",
 
-"🧠 คิดไอเดียใหม่ 1 อย่าง",
-"📖 อ่านอะไรสั้น ๆ 5 นาที",
+"🧠 คิดไอเดียใหม่",
+"📖 อ่านอะไรสั้น ๆ",
 
-"😂 ดู meme 2 นาที",
-"😂 เปิด TikTok 3 นาที",
+"🔥 ทำงานเพิ่มอีก 30 นาที",
+"🔥 ทำงานเพิ่มอีก 15 นาที",
 
-"🔥 ทำงานต่ออีก 30 นาที",
-"🔥 ทำงานต่ออีก 15 นาที",
-
-"🎲 สุ่มใหม่อีกครั้ง",
-"🎲 สุ่มอีกทีถ้าไม่พอใจ",
+"🎲 สุ่มใหม่",
+"🎲 หมุนอีกครั้ง",
 
 "😈 ไม่มีพัก ทำงานต่อ",
-"😈 ทำงานเพิ่มอีก 10 นาที"
+"😈 ทำงานเพิ่มอีก 10 นาที",
+
+"💻 เปิดงานที่ค้างไว้",
+"📋 เช็ค To-Do list",
+"📅 วางแผนงาน",
+
+"🌿 ออกไปสูดอากาศ",
+"🪑 ลุกจากเก้าอี้",
+
+"😆 โทรหาเพื่อน",
+"📷 ถ่ายรูปอะไรสักอย่าง",
+
+"🚀 กลับไปโฟกัสงาน"
 
 ];
 
-"📚 ทำงาน 25 นาที",
-"🧠 ทำงาน 10 นาที",
-"😴 พัก 5 นาที",
-"📱 เล่นมือถือ 5 นาที",
-"🚶 ลุกไปเดิน",
-"💧 ดื่มน้ำ",
-"🎵 ฟังเพลง 1 เพลง",
-"🧘 ยืดเส้น",
-"🔥 กลับไปทำงานเดี๋ยวนี้",
-"🍪 ไปหาอะไรกิน"
+let canvas = document.getElementById("wheel");
+let ctx = canvas.getContext("2d");
 
-];
+let angle = 0;
+let spinning = false;
+
+function drawWheel(){
+
+let arc = (2*Math.PI)/activities.length;
+
+for(let i=0;i<activities.length;i++){
+
+let start = angle + i*arc;
+let end = start + arc;
+
+ctx.beginPath();
+ctx.moveTo(160,160);
+ctx.arc(160,160,160,start,end);
+ctx.fillStyle = `hsl(${i*360/activities.length},70%,60%)`;
+ctx.fill();
+
+ctx.save();
+ctx.translate(160,160);
+ctx.rotate(start + arc/2);
+ctx.fillStyle="black";
+ctx.font="12px Arial";
+ctx.fillText(activities[i],80,5);
+ctx.restore();
+
+}
+
+}
 
 function spin(){
 
-let result = document.getElementById("result");
+if(spinning) return;
 
-result.innerHTML = "กำลังสุ่ม...";
+spinning = true;
 
-setTimeout(function(){
+let spinAngle = Math.random()*10 + 20;
+let duration = 3000;
 
-let random = Math.floor(Math.random()*activities.length);
+let start = null;
 
-result.innerHTML = activities[random];
+function animate(time){
 
-},1000);
+if(!start) start=time;
+
+let progress = time-start;
+
+angle += spinAngle*0.02;
+
+ctx.clearRect(0,0,320,320);
+
+drawWheel();
+
+if(progress < duration){
+
+requestAnimationFrame(animate);
+
+}else{
+
+spinning=false;
+
+let arc = (2*Math.PI)/activities.length;
+let index = Math.floor((activities.length - (angle%(2*Math.PI))/arc)) % activities.length;
+
+document.getElementById("result").innerHTML =
+"ผลลัพธ์: "+activities[index];
 
 }
+
+}
+
+requestAnimationFrame(animate);
+
+}
+
+drawWheel();
 
 </script>
 
