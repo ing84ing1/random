@@ -23,8 +23,7 @@ background:rgba(255,255,255,0.15);
 padding:30px;
 border-radius:20px;
 text-align:center;
-width:340px;
-backdrop-filter:blur(10px);
+width:360px;
 }
 
 .timer{
@@ -59,12 +58,12 @@ cursor:pointer;
 margin:5px;
 }
 
-button:hover{
-opacity:0.85;
-}
-
-#error{
-color:#ffdede;
+#leaderboard{
+background:white;
+color:#333;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
 font-size:14px;
 }
 
@@ -76,14 +75,11 @@ font-size:14px;
 
 <div class="container">
 
-<!-- LOGIN -->
-
 <div id="login">
 
 <h2>🔐 Login</h2>
 
 <input id="email" placeholder="Email">
-
 <input id="password" type="password" placeholder="Password">
 
 <br>
@@ -93,8 +89,6 @@ font-size:14px;
 <p id="error"></p>
 
 </div>
-
-<!-- APP -->
 
 <div id="app" style="display:none">
 
@@ -114,7 +108,15 @@ font-size:14px;
 Pomodoro วันนี้: <span id="count">0</span>
 </div>
 
-<button onclick="start()">เริ่ม</button> <button onclick="logout()">Logout</button>
+<button onclick="start()">Start</button> <button onclick="pause()">Pause</button> <button onclick="resume()">Resume</button>
+
+<button onclick="logout()">Logout</button>
+
+<h3>🏆 Leaderboard</h3>
+
+<div id="leaderboard">
+Loading...
+</div>
 
 </div>
 
@@ -122,7 +124,8 @@ Pomodoro วันนี้: <span id="count">0</span>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 getAuth,
@@ -130,7 +133,19 @@ signInWithEmailAndPassword,
 createUserWithEmailAndPassword,
 signOut,
 onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+getFirestore,
+doc,
+setDoc,
+updateDoc,
+getDoc,
+collection,
+getDocs
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyBdGbhUgZ2XcjF1FnXDQQD1LWYGMdyQnQc",
@@ -143,8 +158,10 @@ appId: "1:753963622178:web:172ee93da98c1a97bb0f7b"
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 const errorText=document.getElementById("error");
+
 
 window.login=function(){
 
@@ -153,19 +170,12 @@ const password=document.getElementById("password").value
 
 signInWithEmailAndPassword(auth,email,password)
 
-.then(()=>{
-
-errorText.innerText=""
-
-})
-
 .catch(err=>{
-
 errorText.innerText=err.message
-
 })
 
 }
+
 
 window.register=function(){
 
@@ -174,25 +184,19 @@ const password=document.getElementById("password").value
 
 createUserWithEmailAndPassword(auth,email,password)
 
-.then(()=>{
-
-errorText.innerText="สมัครสมาชิกสำเร็จ"
-
-})
-
 .catch(err=>{
-
 errorText.innerText=err.message
-
 })
 
 }
+
 
 window.logout=function(){
 
 signOut(auth)
 
 }
+
 
 onAuthStateChanged(auth,(user)=>{
 
@@ -203,6 +207,8 @@ document.getElementById("app").style.display="block"
 
 document.getElementById("user").innerHTML="👤 "+user.email
 
+loadLeaderboard()
+
 }else{
 
 document.getElementById("login").style.display="block"
@@ -211,6 +217,7 @@ document.getElementById("app").style.display="none"
 }
 
 })
+
 
 let focusTime=1500
 let breakTime=300
@@ -223,13 +230,14 @@ let count=0
 
 document.getElementById("count").innerHTML=count
 
+
 let studyActivities=[
 
 "📖 อ่านบทเรียน 5 หน้า",
 "📖 อ่านสไลด์ 10 หน้า",
 "📖 อ่านหัวข้อใหม่",
 "📖 ทบทวนบทเรียน",
-"🧠 อ่านแล้วสรุป 5 บรรทัด"
+"🧠 อ่านแล้วสรุป"
 
 ]
 
@@ -243,11 +251,13 @@ let breakActivities=[
 
 ]
 
+
 function random(list){
 
 return list[Math.floor(Math.random()*list.length)]
 
 }
+
 
 window.start=function(){
 
@@ -264,6 +274,21 @@ document.getElementById("mode").innerHTML="📖 โหมดอ่าน"
 timer=setInterval(update,1000)
 
 }
+
+
+window.pause=function(){
+
+clearInterval(timer)
+
+}
+
+
+window.resume=function(){
+
+timer=setInterval(update,1000)
+
+}
+
 
 function update(){
 
@@ -282,11 +307,12 @@ if(isFocus){
 count++
 document.getElementById("count").innerHTML=count
 
+saveStudyTime()
+
 isFocus=false
 time=breakTime
 
 document.getElementById("mode").innerHTML="😴 โหมดพัก"
-
 document.getElementById("activity").innerHTML=random(breakActivities)
 
 }else{
@@ -295,12 +321,66 @@ isFocus=true
 time=focusTime
 
 document.getElementById("mode").innerHTML="📖 โหมดอ่าน"
-
 document.getElementById("activity").innerHTML=random(studyActivities)
 
 }
 
 }
+
+}
+
+
+async function saveStudyTime(){
+
+const user=auth.currentUser
+
+if(!user) return
+
+const ref=doc(db,"leaderboard",user.uid)
+
+const snap=await getDoc(ref)
+
+if(snap.exists()){
+
+await updateDoc(ref,{
+time:snap.data().time+25
+})
+
+}else{
+
+await setDoc(ref,{
+email:user.email,
+time:25
+})
+
+}
+
+loadLeaderboard()
+
+}
+
+
+async function loadLeaderboard(){
+
+const querySnapshot = await getDocs(collection(db,"leaderboard"))
+
+let list=[]
+
+querySnapshot.forEach(doc=>{
+list.push(doc.data())
+})
+
+list.sort((a,b)=>b.time-a.time)
+
+let html=""
+
+list.forEach((p,i)=>{
+
+html+= (i+1)+". "+p.email+" - "+p.time+" นาที<br>"
+
+})
+
+document.getElementById("leaderboard").innerHTML=html
 
 }
 
