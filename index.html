@@ -26,17 +26,17 @@ width:360px;
 text-align:center;
 }
 
+.timer{
+font-size:40px;
+font-weight:bold;
+}
+
 .card{
 background:white;
 color:#333;
 padding:10px;
 border-radius:10px;
 margin:10px 0;
-}
-
-.timer{
-font-size:40px;
-font-weight:bold;
 }
 
 input{
@@ -86,8 +86,6 @@ font-size:14px;
 
 <div class="container">
 
-<!-- LOGIN -->
-
 <div id="login">
 
 <h2>🔐 Login</h2>
@@ -103,15 +101,11 @@ font-size:14px;
 
 </div>
 
-<!-- APP -->
-
 <div id="app" style="display:none">
 
 <h2>📚 Study App</h2>
 
 <p id="user"></p>
-
-<!-- TIMER -->
 
 <div id="mode">พร้อมเริ่ม</div>
 
@@ -129,12 +123,9 @@ font-size:14px;
 Pomodoro วันนี้: <span id="count">0</span>
 </div>
 
-<!-- TRACKER -->
-
 <h3>📚 Reading Tracker</h3>
 
 <input id="book" placeholder="กำลังอ่านเรื่องอะไร">
-
 <input id="progressInput" type="number" min="0" max="100" placeholder="% ที่อ่าน">
 
 <button onclick="updateProgress()">Update</button>
@@ -144,8 +135,6 @@ Pomodoro วันนี้: <span id="count">0</span>
 </div>
 
 <p id="status"></p>
-
-<!-- LEADERBOARD -->
 
 <h3>🏆 Leaderboard</h3>
 
@@ -195,39 +184,46 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const errorText=document.getElementById("error");
+/* DOM */
+
+const emailInput = document.getElementById("email")
+const passwordInput = document.getElementById("password")
+const loginDiv = document.getElementById("login")
+const appDiv = document.getElementById("app")
+const userText = document.getElementById("user")
+
+const timerText = document.getElementById("timer")
+const countText = document.getElementById("count")
+const activity = document.getElementById("activity")
+
+const leaderboard = document.getElementById("leaderboard")
+
+const bookInput = document.getElementById("book")
+const progressInput = document.getElementById("progressInput")
+const bar = document.getElementById("bar")
+const status = document.getElementById("status")
 
 /* LOGIN */
 
 window.login=function(){
 
-const email=emailInput.value
-const password=passwordInput.value
-
-signInWithEmailAndPassword(auth,email,password)
+signInWithEmailAndPassword(auth,emailInput.value,passwordInput.value)
 
 .catch(err=>{
-errorText.innerText=err.message
+document.getElementById("error").innerText=err.message
 })
 
 }
-
-/* REGISTER */
 
 window.register=function(){
 
-const email=emailInput.value
-const password=passwordInput.value
-
-createUserWithEmailAndPassword(auth,email,password)
+createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value)
 
 .catch(err=>{
-errorText.innerText=err.message
+document.getElementById("error").innerText=err.message
 })
 
 }
-
-/* LOGOUT */
 
 window.logout=function(){
 
@@ -235,14 +231,12 @@ signOut(auth)
 
 }
 
-/* AUTH STATE */
-
 onAuthStateChanged(auth,(user)=>{
 
 if(user){
 
-login.style.display="none"
-app.style.display="block"
+loginDiv.style.display="none"
+appDiv.style.display="block"
 
 userText.innerHTML="👤 "+user.email
 
@@ -250,8 +244,8 @@ loadLeaderboard()
 
 }else{
 
-login.style.display="block"
-app.style.display="none"
+loginDiv.style.display="block"
+appDiv.style.display="none"
 
 }
 
@@ -346,12 +340,12 @@ activities[Math.floor(Math.random()*activities.length)]
 
 window.updateProgress=function(){
 
-let book=bookInput.value
 let percent=progressInput.value
 
 bar.style.width=percent+"%"
 
-status.innerHTML="กำลังอ่าน: "+book+" ("+percent+"%)"
+status.innerHTML=
+"กำลังอ่าน: "+bookInput.value+" ("+percent+"%)"
 
 }
 
