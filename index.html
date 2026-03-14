@@ -3,91 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biotech Study Dashboard Pro</title>
+    <title>Biotech Global Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <style>
         :root { --primary: #4facfe; --secondary: #00f2fe; --accent: #ff6b6b; --dark: #2d3436; --success: #00eb84; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0; min-height: 100vh; display: flex; justify-content: center; padding: 20px; color: white; }
-        .container { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); padding: 30px; border-radius: 24px; width: 100%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0; min-height: 100vh; display: flex; justify-content: center; padding: 20px; color: white; }
+        .container { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); padding: 30px; border-radius: 24px; width: 100%; max-width: 600px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
         
-        input, select { width: calc(100% - 24px); padding: 12px; margin: 8px 0; border: none; border-radius: 10px; font-size: 14px; }
-        button { padding: 12px 20px; border: none; border-radius: 10px; background: var(--accent); color: white; cursor: pointer; font-weight: 600; transition: 0.2s; margin: 4px; }
+        input { width: calc(100% - 24px); padding: 12px; margin: 8px 0; border: none; border-radius: 10px; }
+        button { padding: 12px 20px; border: none; border-radius: 10px; background: var(--accent); color: white; cursor: pointer; font-weight: 600; transition: 0.2s; }
         button:hover { opacity: 0.9; transform: translateY(-1px); }
-        button:disabled { background: #95a5a6; cursor: not-allowed; }
 
-        .timer-display { font-size: 64px; font-weight: bold; margin: 10px 0; text-align: center; text-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
-        .progress-bar { background: rgba(255,255,255,0.3); height: 12px; border-radius: 6px; overflow: hidden; margin: 10px 0; }
-        .bar-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Table Style */
+        .exam-table { width: 100%; border-collapse: collapse; background: white; color: var(--dark); border-radius: 12px; overflow: hidden; margin-top: 15px; font-size: 14px; }
+        .exam-table th { background: #f1f2f6; padding: 12px; text-align: left; }
+        .exam-table td { padding: 12px; border-bottom: 1px solid #eee; }
+        .days-highlight { font-weight: bold; color: var(--accent); }
         
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .card { background: white; color: var(--dark); padding: 15px; border-radius: 15px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .card-val { font-size: 22px; font-weight: bold; color: var(--accent); }
-        
+        .timer-display { font-size: 56px; font-weight: bold; text-align: center; margin: 15px 0; }
         #leaderboard, #calendar { background: white; color: var(--dark); border-radius: 15px; padding: 15px; margin-top: 15px; }
-        .error-text { color: #ffeaa7; font-size: 13px; margin-bottom: 10px; text-align: center; }
+        .progress-bar { background: rgba(255,255,255,0.3); height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .bar-fill { height: 100%; width: 0%; background: var(--success); transition: 0.6s; }
         hr { border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 25px 0; }
-        .label-group { font-size: 14px; font-weight: 600; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="auth-ui">
-        <h2 style="text-align: center;">🧬 Biotech Dashboard</h2>
-        <input id="email" type="email" placeholder="อีเมลนักศึกษา">
+        <h2 style="text-align: center;">🔐 Biotech Study Dashboard</h2>
+        <input id="email" type="email" placeholder="อีเมล">
         <input id="password" type="password" placeholder="รหัสผ่าน">
-        <div id="auth-error" class="error-text"></div>
-        <div style="display: flex; justify-content: center;">
+        <div style="text-align: center; margin-top: 10px;">
             <button onclick="authAction('login')">เข้าสู่ระบบ</button>
             <button onclick="authAction('reg')" style="background:transparent; border:1px solid white;">ลงทะเบียน</button>
         </div>
     </div>
 
     <div id="app-ui" style="display:none">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <small id="user-mail" style="background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;"></small>
-            <button onclick="logout()" style="padding: 5px 12px; font-size: 11px; margin: 0;">ออกจากระบบ</button>
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <small id="user-mail"></small>
+            <button onclick="logout()" style="padding: 5px 10px; font-size: 11px;">Log out</button>
         </div>
 
         <div class="timer-display" id="clock">25:00</div>
         <div style="text-align:center;">
-            <button id="btn-start" onclick="timerStart()">เริ่มโฟกัส</button>
-            <button onclick="timerPause()">พัก</button>
-            <button onclick="timerReset()" style="background:#636e72">รีเซ็ต</button>
+            <button onclick="timerStart()">Start</button>
+            <button onclick="timerPause()">Pause</button>
+            <button onclick="timerReset()" style="background:#636e72">Reset</button>
         </div>
-        <p style="text-align:center; font-size: 14px;">วันนี้สำเร็จ: <b id="pomo-count">0</b> รอบ</p>
 
         <hr>
 
-        <h3>⏳ นับถอยหลังวันสอบ</h3>
-        <div style="display:flex; gap:5px; flex-wrap: wrap;">
-            <input id="ex-name" placeholder="ชื่อวิชา (เช่น Microbiology)" style="flex:1; min-width: 120px;">
-            <input id="ex-date" type="date" style="flex:1; min-width: 120px;">
-            <button onclick="addExam()" style="background:#fdcb6e; width: 100%;">เพิ่มกำหนดการสอบ</button>
+        <h3>📅 ตารางวันสอบ (ทุกคน)</h3>
+        <div style="display:flex; gap:5px; margin-bottom: 10px;">
+            <input id="ex-name" placeholder="วิชา" style="flex:2;">
+            <input id="ex-date" type="date" style="flex:2;">
+            <button onclick="addExam()" style="flex:1; background:#fdcb6e;">เพิ่ม</button>
         </div>
-        <div id="exam-list" class="grid-container"></div>
+        
+        <table class="exam-table">
+            <thead>
+                <tr>
+                    <th>โดย</th>
+                    <th>วิชา</th>
+                    <th>วันสอบ</th>
+                    <th>เหลือ</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="exam-body">
+                </tbody>
+        </table>
 
         <hr>
 
-        <h3>📖 ติดตามการอ่าน</h3>
-        <input id="bk-title" placeholder="วิชา/หนังสือที่กำลังอ่าน">
-        <input id="bk-perc" type="number" max="100" placeholder="ความคืบหน้า (%)">
-        <button onclick="saveProgress()" style="width:100%; margin: 10px 0; background: var(--success);">อัปเดตสถานะ</button>
+        <h3>📖 Reading Progress</h3>
+        <input id="bk-title" placeholder="กำลังอ่านอะไรอยู่...">
+        <input id="bk-perc" type="number" placeholder="% ความคืบหน้า">
+        <button onclick="saveProgress()" style="width:100%; margin-top:10px; background: var(--success);">Update</button>
         <div class="progress-bar"><div id="bk-bar" class="bar-fill"></div></div>
-        <small id="bk-status" style="font-style: italic;"></small>
 
-        <hr>
+        <h3>🏆 Leaderboard</h3>
+        <div id="leaderboard"></div>
 
-        <h3>🏆 อันดับนักอ่าน (Top 5)</h3>
-        <div id="leaderboard">กำลังโหลด...</div>
-
-        <hr>
-
-        <h3>📅 ตารางงานและโปรเจกต์</h3>
-        <input id="cal-title" placeholder="ชื่องาน/แล็บ">
-        <input id="cal-date" type="date">
-        <button onclick="saveEvent()" style="width:100%; margin: 10px 0; background:#0984e3;">บันทึกลงปฏิทิน</button>
+        <h3>📅 Work Calendar</h3>
         <div id="calendar"></div>
     </div>
 </div>
@@ -95,7 +96,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, query, where, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBdGbhUgZ2XcjF1FnXDQQD1LWYGMdyQnQc",
@@ -110,158 +111,101 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let timerInt;
-    let secondsLeft = 1500;
-    let cal;
+    let timerInt, secondsLeft = 1500;
 
-    // --- Authentication ---
+    // --- Auth ---
     window.authAction = async (t) => {
-        const e = document.getElementById("email").value;
-        const p = document.getElementById("password").value;
-        if(!e || !p) return;
-        try {
-            if(t==='login') await signInWithEmailAndPassword(auth, e, p);
-            else await createUserWithEmailAndPassword(auth, e, p);
-        } catch (err) { document.getElementById("auth-error").innerText = "ผิดพลาด: " + err.message; }
+        const e = document.getElementById("email").value, p = document.getElementById("password").value;
+        try { t==='login' ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); } 
+        catch (err) { alert(err.message); }
     };
     window.logout = () => signOut(auth);
 
-    onAuthStateChanged(auth, (u) => {
+    onAuthStateChanged(auth, u => {
         if(u) {
             document.getElementById("auth-ui").style.display="none";
             document.getElementById("app-ui").style.display="block";
-            document.getElementById("user-mail").innerText = "👤 " + u.email;
-            initDashboard();
+            document.getElementById("user-mail").innerText = u.email;
+            initApp();
         } else {
             document.getElementById("auth-ui").style.display="block";
             document.getElementById("app-ui").style.display="none";
         }
     });
 
-    // --- Pomodoro Logic ---
+    // --- Timer ---
     window.timerStart = () => {
         clearInterval(timerInt);
-        document.getElementById("btn-start").disabled = true;
         timerInt = setInterval(() => {
             secondsLeft--;
-            renderTime();
-            if(secondsLeft <= 0) {
-                clearInterval(timerInt);
-                completePomo();
-            }
+            const m = Math.floor(secondsLeft/60), s = secondsLeft%60;
+            document.getElementById("clock").innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(secondsLeft <= 0) { clearInterval(timerInt); alert("Time up!"); timerReset(); }
         }, 1000);
     };
-    window.timerPause = () => { clearInterval(timerInt); document.getElementById("btn-start").disabled = false; };
-    window.timerReset = () => { timerPause(); secondsLeft = 1500; renderTime(); };
-    function renderTime() {
-        const m = Math.floor(secondsLeft/60);
-        const s = secondsLeft%60;
-        document.getElementById("clock").innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    }
-    async function completePomo() {
-        const ref = doc(db, "pomodoro", auth.currentUser.uid);
-        const snap = await getDoc(ref);
-        let c = (snap.exists() ? (snap.data().count || 0) : 0) + 1;
-        await setDoc(ref, { count: c }, { merge: true });
-        alert("🎉 เก่งมาก! จบไปอีก 1 รอบแล้ว");
-        timerReset();
-    }
+    window.timerPause = () => clearInterval(timerInt);
+    window.timerReset = () => { timerPause(); secondsLeft = 1500; document.getElementById("clock").innerText = "25:00"; };
 
-    // --- Exam Countdown Logic ---
+    // --- Global Exam Countdown (Table) ---
     window.addExam = async () => {
-        const t = document.getElementById("ex-name").value;
-        const d = document.getElementById("ex-date").value;
+        const t = document.getElementById("ex-name").value, d = document.getElementById("ex-date").value;
         if(t && d) {
-            await addDoc(collection(db,"exams"), { uid: auth.currentUser.uid, title: t, date: d });
+            await addDoc(collection(db,"exams"), { 
+                uid: auth.currentUser.uid, 
+                user: auth.currentUser.email.split('@')[0], 
+                title: t, 
+                date: d 
+            });
             document.getElementById("ex-name").value = "";
-            document.getElementById("ex-date").value = "";
         }
     };
-    window.removeExam = async (id) => { if(confirm("ลบกำหนดการสอบนี้ใช่ไหม?")) await deleteDoc(doc(db,"exams",id)); };
+    window.removeExam = async (id) => { if(confirm("ลบรายการนี้ใช่ไหม?")) await deleteDoc(doc(db,"exams",id)); };
 
-    // --- Progress & Events Logic ---
+    // --- Progress ---
     window.saveProgress = async () => {
-        const t = document.getElementById("bk-title").value;
-        const p = parseInt(document.getElementById("bk-perc").value);
-        if(t && !isNaN(p)) {
-            await setDoc(doc(db,"progress",auth.currentUser.uid), { 
-                email: auth.currentUser.email, 
-                book: t, 
-                percent: p,
-                updatedAt: new Date()
-            });
-        }
-    };
-    window.saveEvent = async () => {
-        const t = document.getElementById("cal-title").value;
-        const d = document.getElementById("cal-date").value;
-        if(t && d) {
-            await addDoc(collection(db,"events"), { uid: auth.currentUser.uid, title: t, date: d });
-            document.getElementById("cal-title").value = "";
-            document.getElementById("cal-date").value = "";
-        }
+        const t = document.getElementById("bk-title").value, p = parseInt(document.getElementById("bk-perc").value);
+        if(t && !isNaN(p)) await setDoc(doc(db,"progress",auth.currentUser.uid), { email: auth.currentUser.email, book: t, percent: p });
     };
 
-    // --- Core Sync System (Fix Refreshed Data Loss) ---
-    function initDashboard() {
-        // 1. Initialize Calendar
-        if (!cal) {
-            cal = new FullCalendar.Calendar(document.getElementById('calendar'), { 
-                initialView: 'dayGridMonth', 
-                height: 'auto',
-                headerToolbar: { left: 'prev', center: 'title', right: 'next' }
-            });
-            cal.render();
-        }
-
-        // 2. Auto-load Events
-        onSnapshot(query(collection(db,"events"), where("uid","==",auth.currentUser.uid)), s => {
-            cal.removeAllEvents();
-            s.forEach(d => cal.addEvent({ title: d.data().title, start: d.data().date }));
-        });
-
-        // 3. Auto-load Exams
-        onSnapshot(query(collection(db,"exams"), where("uid","==",auth.currentUser.uid)), s => {
-            const el = document.getElementById("exam-list");
-            el.innerHTML = "";
+    function initApp() {
+        // Load Exams (Global)
+        onSnapshot(query(collection(db,"exams"), orderBy("date", "asc")), s => {
+            const body = document.getElementById("exam-body");
+            body.innerHTML = "";
             s.forEach(d => {
-                const diff = Math.ceil((new Date(d.data().date) - new Date()) / 86400000);
-                el.innerHTML += `
-                    <div class="card">
-                        <span onclick="removeExam('${d.id}')" style="float:right;cursor:pointer;color:#ccc;font-size:12px;">✖</span>
-                        <small style="display:block;margin-bottom:5px;">${d.data().title}</small>
-                        <div class="card-val">${diff > 0 ? diff+' วัน' : (diff === 0 ? 'วันนี้!' : 'สอบแล้ว')}</div>
-                    </div>`;
+                const data = d.data();
+                const diff = Math.ceil((new Date(data.date) - new Date()) / 86400000);
+                const daysText = diff > 0 ? `${diff} วัน` : (diff === 0 ? "วันนี้!" : "ผ่านแล้ว");
+                body.innerHTML += `
+                    <tr>
+                        <td><small>${data.user}</small></td>
+                        <td><b>${data.title}</b></td>
+                        <td>${data.date}</td>
+                        <td class="days-highlight">${daysText}</td>
+                        <td>${data.uid === auth.currentUser.uid ? `<span onclick="removeExam('${d.id}')" style="cursor:pointer;">🗑️</span>` : ''}</td>
+                    </tr>`;
             });
         });
 
-        // 4. Auto-load Personal Reading Progress
-        onSnapshot(doc(db,"progress",auth.currentUser.uid), s => {
-            if(s.exists()){
-                const d = s.data();
-                document.getElementById("bk-bar").style.width = d.percent+"%";
-                document.getElementById("bk-status").innerText = `สถานะ: ${d.book} (${d.percent}%)`;
-                document.getElementById("bk-title").value = d.book;
-                document.getElementById("bk-perc").value = d.percent;
-            }
-        });
-
-        // 5. Auto-load Leaderboard (Top 5)
+        // Load Leaderboard
         onSnapshot(collection(db,"progress"), s => {
             let l = []; s.forEach(d => l.push(d.data()));
             l.sort((a,b)=>b.percent-a.percent);
-            document.getElementById("leaderboard").innerHTML = l.slice(0,5).map((p,i)=>
-                `<div style="margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:4px;">
-                    <b>${i+1}.</b> ${p.email.split('@')[0]} <span style="color:var(--success); float:right;">${p.percent}%</span>
-                    <br><small style="color:#666">${p.book}</small>
-                </div>`
-            ).join('');
+            document.getElementById("leaderboard").innerHTML = l.map((p,i)=>`<div>${i+1}. ${p.email.split('@')[0]} - ${p.percent}%</div>`).join('');
         });
 
-        // 6. Auto-load Pomodoro Count
-        onSnapshot(doc(db,"pomodoro",auth.currentUser.uid), s => { 
-            if(s.exists()) document.getElementById("pomo-count").innerText = s.data().count || 0; 
+        // Load Personal Progress
+        onSnapshot(doc(db,"progress",auth.currentUser.uid), s => {
+            if(s.exists()){
+                document.getElementById("bk-bar").style.width = s.data().percent+"%";
+                document.getElementById("bk-title").value = s.data().book;
+                document.getElementById("bk-perc").value = s.data().percent;
+            }
         });
+
+        // Calendar
+        const cal = new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', height: 'auto' });
+        cal.render();
     }
 </script>
 </body>
