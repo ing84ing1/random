@@ -52,14 +52,6 @@ font-weight:bold;
 margin:10px;
 }
 
-.card{
-background:white;
-color:black;
-padding:10px;
-border-radius:10px;
-margin:10px 0;
-}
-
 .progress{
 background:#ddd;
 height:20px;
@@ -74,13 +66,6 @@ background:#4caf50;
 }
 
 #leaderboard{
-background:white;
-color:black;
-padding:10px;
-border-radius:10px;
-}
-
-.calendar-panel{
 background:white;
 color:black;
 padding:10px;
@@ -124,13 +109,9 @@ margin-top:10px;
 
 <div class="timer" id="timer">25:00</div>
 
-<button onclick="start()">Start</button> <button onclick="pause()">Pause</button> <button onclick="resume()">Resume</button>
+<button onclick="start()">Start</button> <button onclick="pause()">Pause</button>
 
-<div class="card" id="activity">
-กดสุ่มกิจกรรม
-</div>
-
-<button onclick="randomActivity()">สุ่มกิจกรรม</button>
+<p>Pomodoro วันนี้: <span id="count">0</span></p>
 
 <h3>📚 Reading Tracker</h3>
 
@@ -145,25 +126,16 @@ margin-top:10px;
 
 <p id="status"></p>
 
-<h3>🏁 Study Race</h3>
+<h3>🏁 Leaderboard</h3>
 
 <div id="leaderboard"></div>
 
 <h3>📅 ปฏิทินงาน / สอบ</h3>
 
-<div class="calendar-panel">
-
-<select id="eventType">
-<option value="exam">📕 สอบ</option>
-<option value="homework">📘 การบ้าน</option>
-</select>
-
-<input id="eventTitle" placeholder="ชื่อวิชา / งาน">
+<input id="eventTitle" placeholder="ชื่อการบ้าน / สอบ">
 <input id="eventDate" type="date">
 
 <button onclick="addEvent()">เพิ่ม</button>
-
-</div>
 
 <div id="calendar"></div>
 
@@ -191,10 +163,10 @@ import {
 getFirestore,
 doc,
 setDoc,
+getDoc,
 collection,
 onSnapshot,
-addDoc,
-getDocs
+addDoc
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -213,63 +185,88 @@ const db = getFirestore(app);
 
 const emailInput=document.getElementById("email")
 const passwordInput=document.getElementById("password")
+
 const loginDiv=document.getElementById("login")
 const appDiv=document.getElementById("app")
 const userText=document.getElementById("user")
 
 const timerText=document.getElementById("timer")
-const leaderboard=document.getElementById("leaderboard")
+const countText=document.getElementById("count")
 
 const bookInput=document.getElementById("book")
 const progressInput=document.getElementById("progressInput")
 const bar=document.getElementById("bar")
 const status=document.getElementById("status")
 
+const leaderboard=document.getElementById("leaderboard")
+
+let timer
+let focusTime=1500
+let time=focusTime
+
 /* LOGIN */
 
 window.login=function(){
+
 signInWithEmailAndPassword(auth,emailInput.value,passwordInput.value)
-.catch(err=>{document.getElementById("error").innerText=err.message})
+.catch(err=>{
+document.getElementById("error").innerText=err.message
+})
+
 }
 
 window.register=function(){
+
 createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value)
-.catch(err=>{document.getElementById("error").innerText=err.message})
+.catch(err=>{
+document.getElementById("error").innerText=err.message
+})
+
 }
 
 window.logout=function(){ signOut(auth) }
 
-onAuthStateChanged(auth,(user)=>{
+/* AUTH */
+
+onAuthStateChanged(auth,async (user)=>{
 
 if(user){
+
 loginDiv.style.display="none"
 appDiv.style.display="block"
+
 userText.innerHTML="👤 "+user.email
+
 loadLeaderboard()
+loadProgress()
+loadPomodoro()
+
 }else{
+
 loginDiv.style.display="block"
 appDiv.style.display="none"
+
 }
 
 })
 
 /* TIMER */
 
-let focusTime=1500
-let time=focusTime
-let timer
-
 window.start=function(){
+
 clearInterval(timer)
-time=focusTime
+
 timer=setInterval(update,1000)
+
 }
 
-window.pause=function(){ clearInterval(timer) }
+window.pause=function(){
 
-window.resume=function(){ timer=setInterval(update,1000) }
+clearInterval(timer)
 
-function update(){
+}
+
+async function update(){
 
 let min=Math.floor(time/60)
 let sec=time%60
@@ -280,28 +277,50 @@ String(min).padStart(2,"0")+":"+String(sec).padStart(2,"0")
 time--
 
 if(time<0){
+
 time=focusTime
+
+let user=auth.currentUser
+
+let ref=doc(db,"pomodoro",user.uid)
+
+let snap=await getDoc(ref)
+
+let count=0
+
+if(snap.exists()) count=snap.data().count
+
+count++
+
+await setDoc(ref,{count:count})
+
+countText.innerHTML=count
+
+}
+
+}
+
+/* LOAD POMODORO */
+
+async function loadPomodoro(){
+
+const user=auth.currentUser
+
+const ref=doc(db,"pomodoro",user.uid)
+
+const snap=await getDoc(ref)
+
+if(snap.exists()){
+
+countText.innerHTML=snap.data().count
+
 }
 
 }
 
-/* RANDOM */
+/* PROGRESS */
 
-let activities=[
-"อ่านต่ออีก 5 หน้า",
-"ทบทวนโน้ต",
-"พักสายตา",
-"ลุกเดิน",
-"ดื่มน้ำ"
-]
-
-window.randomActivity=function(){
-activity.innerHTML=activities[Math.floor(Math.random()*activities.length)]
-}
-
-/* TRACKER */
-
-window.updateProgress=async function(){
+window.updateProgress = async function(){
 
 let book=bookInput.value
 let percent=Number(progressInput.value)
@@ -311,17 +330,43 @@ bar.style.width=percent+"%"
 status.innerHTML="กำลังอ่าน: "+book+" ("+percent+"%)"
 
 const user=auth.currentUser
-if(!user) return
 
 await setDoc(doc(db,"progress",user.uid),{
+
 email:user.email,
 book:book,
 percent:percent
+
 })
 
 }
 
-/* REALTIME LEADERBOARD */
+/* LOAD PROGRESS */
+
+async function loadProgress(){
+
+const user=auth.currentUser
+
+const ref=doc(db,"progress",user.uid)
+
+const snap=await getDoc(ref)
+
+if(snap.exists()){
+
+let data=snap.data()
+
+bookInput.value=data.book
+progressInput.value=data.percent
+
+bar.style.width=data.percent+"%"
+
+status.innerHTML="กำลังอ่าน: "+data.book+" ("+data.percent+"%)"
+
+}
+
+}
+
+/* LEADERBOARD */
 
 function loadLeaderboard(){
 
@@ -359,17 +404,13 @@ let calendar
 document.addEventListener('DOMContentLoaded', function() {
 
 calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+
 initialView:'dayGridMonth',
-headerToolbar:{
-left:'prev,next today',
-center:'title',
-right:'dayGridMonth,timeGridWeek'
-},
 height:420
+
 })
 
 calendar.render()
-loadEvents()
 
 })
 
@@ -377,44 +418,15 @@ window.addEvent=async function(){
 
 let title=document.getElementById("eventTitle").value
 let date=document.getElementById("eventDate").value
-let type=document.getElementById("eventType").value
-
-let color= type==="exam" ? "#e74c3c" : "#3498db"
 
 await addDoc(collection(db,"events"),{
 title:title,
-date:date,
-type:type
+date:date
 })
 
 calendar.addEvent({
 title:title,
-start:date,
-backgroundColor:color
-})
-
-}
-
-async function loadEvents(){
-
-onSnapshot(collection(db,"events"),(snapshot)=>{
-
-calendar.removeAllEvents()
-
-snapshot.forEach(doc=>{
-
-let data=doc.data()
-
-let color=data.type==="exam" ? "#e74c3c" : "#3498db"
-
-calendar.addEvent({
-title:data.title,
-start:data.date,
-backgroundColor:color
-})
-
-})
-
+start:date
 })
 
 }
