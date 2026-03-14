@@ -1,437 +1,246 @@
 <!DOCTYPE html>
-
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>Study Dashboard</title>
-
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-
-<style>
-
-body{
-font-family:system-ui;
-background:linear-gradient(135deg,#4facfe,#00f2fe);
-margin:0;
-display:flex;
-justify-content:center;
-padding:20px;
-color:white;
-}
-
-.container{
-background:rgba(255,255,255,0.15);
-padding:20px;
-border-radius:20px;
-width:460px;
-text-align:center;
-}
-
-input,select{
-width:90%;
-padding:8px;
-margin:4px 0;
-border:none;
-border-radius:6px;
-}
-
-button{
-padding:8px 14px;
-margin:4px;
-border:none;
-border-radius:8px;
-background:#ff6b6b;
-color:white;
-cursor:pointer;
-}
-
-.timer{
-font-size:36px;
-font-weight:bold;
-margin:10px;
-}
-
-.progress{
-background:#ddd;
-height:20px;
-border-radius:10px;
-overflow:hidden;
-}
-
-.bar{
-height:20px;
-width:0%;
-background:#4caf50;
-}
-
-#leaderboard{
-background:white;
-color:black;
-padding:10px;
-border-radius:10px;
-}
-
-#calendar{
-background:white;
-color:black;
-border-radius:10px;
-padding:10px;
-margin-top:10px;
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Dashboard Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <style>
+        :root { --primary: #4facfe; --secondary: #00f2fe; --accent: #ff6b6b; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; color: white; }
+        .container { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin: 20px; }
+        h2, h3 { margin-top: 0; }
+        input { width: calc(100% - 20px); padding: 10px; margin: 10px 0; border: none; border-radius: 8px; }
+        button { padding: 10px 20px; border: none; border-radius: 8px; background: var(--accent); color: white; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .timer { font-size: 48px; font-weight: bold; margin: 20px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .progress-container { background: rgba(255,255,255,0.3); height: 20px; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+        .bar { height: 100%; width: 0%; background: #4caf50; transition: width 0.5s ease; }
+        #leaderboard { background: white; color: #333; padding: 15px; border-radius: 12px; text-align: left; max-height: 200px; overflow-y: auto; }
+        #calendar { background: white; color: black; border-radius: 12px; padding: 10px; margin-top: 20px; font-size: 0.8em; }
+        .error { color: #ffeb3b; font-size: 0.9em; margin-bottom: 10px; }
+    </style>
 </head>
-
 <body>
 
 <div class="container">
+    <div id="login-section">
+        <h2>🔐 เข้าสู่ระบบ</h2>
+        <input id="email" type="email" placeholder="อีเมล">
+        <input id="password" type="password" placeholder="รหัสผ่าน">
+        <div id="error-msg" class="error"></div>
+        <button onclick="handleAuth('login')">เข้าสู่ระบบ</button>
+        <button onclick="handleAuth('register')" style="background: transparent; border: 1px solid white;">ลงทะเบียน</button>
+    </div>
 
-<div id="login">
+    <div id="app-section" style="display:none">
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <span id="user-display">👤 </span>
+            <button onclick="logout()" style="padding: 5px 10px; font-size: 12px;">ออกกำลัง</button>
+        </div>
 
-<h2>🔐 Login</h2>
+        <div class="timer" id="timer-display">25:00</div>
+        <button id="start-btn" onclick="startTimer()">เริ่ม</button>
+        <button onclick="pauseTimer()">พัก</button>
+        <button onclick="resetTimer()" style="background:#666">รีเซ็ต</button>
+        <p>Pomodoro วันนี้: <span id="pomo-count">0</span> รอบ</p>
 
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+        <hr>
+        
+        <h3>📖 ติดตามการอ่าน</h3>
+        <input id="book-name" placeholder="ชื่อหนังสือที่อ่าน">
+        <input id="read-percent" type="number" min="0" max="100" placeholder="ความคืบหน้า (%)">
+        <button onclick="updateReadingProgress()">อัปเดต</button>
+        <div class="progress-container">
+            <div id="progress-bar" class="bar"></div>
+        </div>
+        <p id="reading-status" style="font-size: 0.9em;"></p>
 
-<button onclick="login()">Login</button> <button onclick="register()">Register</button>
+        <h3>🏆 อันดับนักอ่าน</h3>
+        <div id="leaderboard">กำลังโหลด...</div>
 
-<p id="error"></p>
-
-</div>
-
-<div id="app" style="display:none">
-
-<h2>📚 Study Dashboard</h2>
-
-<p id="user"></p>
-
-<div class="timer" id="timer">25:00</div>
-
-<button onclick="start()">Start</button> <button onclick="pause()">Pause</button>
-
-<p>Pomodoro วันนี้: <span id="count">0</span></p>
-
-<h3>📚 Reading Tracker</h3>
-
-<input id="book" placeholder="กำลังอ่านเรื่องอะไร">
-<input id="progressInput" type="number" min="0" max="100" placeholder="% ที่อ่าน">
-
-<button onclick="updateProgress()">Update</button>
-
-<div class="progress">
-<div id="bar" class="bar"></div>
-</div>
-
-<p id="status"></p>
-
-<h3>🏁 Leaderboard</h3>
-
-<div id="leaderboard"></div>
-
-<h3>📅 ปฏิทินงาน / สอบ</h3>
-
-<input id="eventTitle" placeholder="ชื่อการบ้าน / สอบ">
-<input id="eventDate" type="date">
-
-<button onclick="addEvent()">เพิ่ม</button>
-
-<div id="calendar"></div>
-
-<button onclick="logout()">Logout</button>
-
-</div>
-
+        <h3>📅 แผนการเรียน</h3>
+        <input id="event-title" placeholder="ชื่อวิชา/งาน">
+        <input id="event-date" type="date">
+        <button onclick="addNewEvent()">เพิ่มตาราง</button>
+        <div id="calendar"></div>
+    </div>
 </div>
 
 <script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-getAuth,
-signInWithEmailAndPassword,
-createUserWithEmailAndPassword,
-signOut,
-onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-getFirestore,
-doc,
-setDoc,
-getDoc,
-collection,
-onSnapshot,
-addDoc
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey:"AIzaSyBdGbhUgZ2XcjF1FnXDQQD1LWYGMdyQnQc",
-authDomain:"mumi-chat-f752d.firebaseapp.com",
-projectId:"mumi-chat-f752d",
-storageBucket:"mumi-chat-f752d.firebasestorage.app",
-messagingSenderId:"753963622178",
-appId:"1:753963622178:web:172ee93da98c1a97bb0f7b"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const emailInput=document.getElementById("email")
-const passwordInput=document.getElementById("password")
-
-const loginDiv=document.getElementById("login")
-const appDiv=document.getElementById("app")
-const userText=document.getElementById("user")
-
-const timerText=document.getElementById("timer")
-const countText=document.getElementById("count")
-
-const bookInput=document.getElementById("book")
-const progressInput=document.getElementById("progressInput")
-const bar=document.getElementById("bar")
-const status=document.getElementById("status")
-
-const leaderboard=document.getElementById("leaderboard")
-
-let timer
-let focusTime=1500
-let time=focusTime
-
-/* LOGIN */
-
-window.login=function(){
-
-signInWithEmailAndPassword(auth,emailInput.value,passwordInput.value)
-.catch(err=>{
-document.getElementById("error").innerText=err.message
-})
-
-}
-
-window.register=function(){
-
-createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value)
-.catch(err=>{
-document.getElementById("error").innerText=err.message
-})
-
-}
-
-window.logout=function(){ signOut(auth) }
-
-/* AUTH */
-
-onAuthStateChanged(auth,async (user)=>{
-
-if(user){
-
-loginDiv.style.display="none"
-appDiv.style.display="block"
-
-userText.innerHTML="👤 "+user.email
-
-loadLeaderboard()
-loadProgress()
-loadPomodoro()
-
-}else{
-
-loginDiv.style.display="block"
-appDiv.style.display="none"
-
-}
-
-})
-
-/* TIMER */
-
-window.start=function(){
-
-clearInterval(timer)
-
-timer=setInterval(update,1000)
-
-}
-
-window.pause=function(){
-
-clearInterval(timer)
-
-}
-
-async function update(){
-
-let min=Math.floor(time/60)
-let sec=time%60
-
-timerText.innerHTML=
-String(min).padStart(2,"0")+":"+String(sec).padStart(2,"0")
-
-time--
-
-if(time<0){
-
-time=focusTime
-
-let user=auth.currentUser
-
-let ref=doc(db,"pomodoro",user.uid)
-
-let snap=await getDoc(ref)
-
-let count=0
-
-if(snap.exists()) count=snap.data().count
-
-count++
-
-await setDoc(ref,{count:count})
-
-countText.innerHTML=count
-
-}
-
-}
-
-/* LOAD POMODORO */
-
-async function loadPomodoro(){
-
-const user=auth.currentUser
-
-const ref=doc(db,"pomodoro",user.uid)
-
-const snap=await getDoc(ref)
-
-if(snap.exists()){
-
-countText.innerHTML=snap.data().count
-
-}
-
-}
-
-/* PROGRESS */
-
-window.updateProgress = async function(){
-
-let book=bookInput.value
-let percent=Number(progressInput.value)
-
-bar.style.width=percent+"%"
-
-status.innerHTML="กำลังอ่าน: "+book+" ("+percent+"%)"
-
-const user=auth.currentUser
-
-await setDoc(doc(db,"progress",user.uid),{
-
-email:user.email,
-book:book,
-percent:percent
-
-})
-
-}
-
-/* LOAD PROGRESS */
-
-async function loadProgress(){
-
-const user=auth.currentUser
-
-const ref=doc(db,"progress",user.uid)
-
-const snap=await getDoc(ref)
-
-if(snap.exists()){
-
-let data=snap.data()
-
-bookInput.value=data.book
-progressInput.value=data.percent
-
-bar.style.width=data.percent+"%"
-
-status.innerHTML="กำลังอ่าน: "+data.book+" ("+data.percent+"%)"
-
-}
-
-}
-
-/* LEADERBOARD */
-
-function loadLeaderboard(){
-
-onSnapshot(collection(db,"progress"),(snapshot)=>{
-
-let list=[]
-
-snapshot.forEach(doc=>{
-list.push(doc.data())
-})
-
-list.sort((a,b)=>b.percent-a.percent)
-
-let html=""
-
-list.forEach((p,i)=>{
-
-html+=
-(i+1)+". "+p.email+
-"<br>"+p.book+
-" - "+p.percent+"%<br><br>"
-
-})
-
-leaderboard.innerHTML=html
-
-})
-
-}
-
-/* CALENDAR */
-
-let calendar
-
-document.addEventListener('DOMContentLoaded', function() {
-
-calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-
-initialView:'dayGridMonth',
-height:420
-
-})
-
-calendar.render()
-
-})
-
-window.addEvent=async function(){
-
-let title=document.getElementById("eventTitle").value
-let date=document.getElementById("eventDate").value
-
-await addDoc(collection(db,"events"),{
-title:title,
-date:date
-})
-
-calendar.addEvent({
-title:title,
-start:date
-})
-
-}
-
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBdGbhUgZ2XcjF1FnXDQQD1LWYGMdyQnQc",
+        authDomain: "mumi-chat-f752d.firebaseapp.com",
+        projectId: "mumi-chat-f752d",
+        storageBucket: "mumi-chat-f752d.firebasestorage.app",
+        messagingSenderId: "753963622178",
+        appId: "1:753963622178:web:172ee93da98c1a97bb0f7b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let countdown;
+    let timeLeft = 1500;
+    let calendar;
+
+    // --- Authentication ---
+    window.handleAuth = async (type) => {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const errorDiv = document.getElementById("error-msg");
+        try {
+            if (type === 'login') await signInWithEmailAndPassword(auth, email, password);
+            else await createUserWithEmailAndPassword(auth, email, password);
+            errorDiv.innerText = "";
+        } catch (err) {
+            errorDiv.innerText = "เกิดข้อผิดพลาด: " + err.message;
+        }
+    };
+
+    window.logout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("app-section").style.display = "block";
+            document.getElementById("user-display").innerText = `👤 ${user.email}`;
+            initApp();
+        } else {
+            document.getElementById("login-section").style.display = "block";
+            document.getElementById("app-section").style.display = "none";
+        }
+    });
+
+    // --- Pomodoro Logic ---
+    window.startTimer = () => {
+        clearInterval(countdown);
+        document.getElementById("start-btn").disabled = true;
+        countdown = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                handlePomoComplete();
+            }
+        }, 1000);
+    };
+
+    window.pauseTimer = () => {
+        clearInterval(countdown);
+        document.getElementById("start-btn").disabled = false;
+    };
+
+    window.resetTimer = () => {
+        pauseTimer();
+        timeLeft = 1500;
+        updateTimerDisplay();
+    };
+
+    function updateTimerDisplay() {
+        const min = Math.floor(timeLeft / 60);
+        const sec = timeLeft % 60;
+        document.getElementById("timer-display").innerText = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
+
+    async function handlePomoComplete() {
+        const user = auth.currentUser;
+        const ref = doc(db, "pomodoro", user.uid);
+        const snap = await getDoc(ref);
+        let count = snap.exists() ? (snap.data().count || 0) : 0;
+        count++;
+        await setDoc(ref, { count: count }, { merge: true });
+        document.getElementById("pomo-count").innerText = count;
+        alert("เก่งมาก! พักสายตาซักครู่นะ");
+        resetTimer();
+    }
+
+    // --- Reading Progress ---
+    window.updateReadingProgress = async () => {
+        const book = document.getElementById("book-name").value;
+        const percent = parseInt(document.getElementById("read-percent").value);
+        if (!book || isNaN(percent)) return;
+
+        const user = auth.currentUser;
+        await setDoc(doc(db, "progress", user.uid), {
+            email: user.email,
+            book: book,
+            percent: percent,
+            updatedAt: new Date()
+        });
+    };
+
+    // --- Calendar & Events ---
+    async function initCalendar() {
+        const calendarEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            headerToolbar: { left: 'prev', center: 'title', right: 'next' }
+        });
+        calendar.render();
+        loadUserEvents();
+    }
+
+    async function loadUserEvents() {
+        const user = auth.currentUser;
+        const q = query(collection(db, "events"), where("uid", "==", user.uid));
+        onSnapshot(q, (snapshot) => {
+            calendar.removeAllEvents();
+            snapshot.forEach(doc => {
+                calendar.addEvent({ title: doc.data().title, start: doc.data().date });
+            });
+        });
+    }
+
+    window.addNewEvent = async () => {
+        const title = document.getElementById("event-title").value;
+        const date = document.getElementById("event-date").value;
+        if (!title || !date) return;
+
+        await addDoc(collection(db, "events"), {
+            uid: auth.currentUser.uid,
+            title: title,
+            date: date
+        });
+        document.getElementById("event-title").value = "";
+    };
+
+    // --- Sync Data ---
+    function initApp() {
+        initCalendar();
+        
+        // Load Leaderboard
+        onSnapshot(collection(db, "progress"), (snap) => {
+            let list = [];
+            snap.forEach(doc => list.push(doc.data()));
+            list.sort((a, b) => b.percent - a.percent);
+            document.getElementById("leaderboard").innerHTML = list.map((p, i) => 
+                `<div>${i+1}. <b>${p.email.split('@')[0]}</b>: ${p.book} (${p.percent}%)</div>`
+            ).join('<br>');
+        });
+
+        // Load Personal Progress
+        onSnapshot(doc(db, "progress", auth.currentUser.uid), (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById("progress-bar").style.width = data.percent + "%";
+                document.getElementById("reading-status").innerText = `กำลังอ่าน: ${data.book}`;
+            }
+        });
+
+        // Load Pomo Count
+        onSnapshot(doc(db, "pomodoro", auth.currentUser.uid), (snap) => {
+            if (snap.exists()) document.getElementById("pomo-count").innerText = snap.data().count;
+        });
+    }
 </script>
-
 </body>
 </html>
