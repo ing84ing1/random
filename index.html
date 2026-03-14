@@ -3,7 +3,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Study Pomodoro</title>
+<title>Study App</title>
 
 <style>
 
@@ -22,40 +22,52 @@ color:white;
 background:rgba(255,255,255,0.15);
 padding:30px;
 border-radius:20px;
-text-align:center;
 width:360px;
-}
-
-.timer{
-font-size:48px;
-font-weight:bold;
-margin:10px 0;
+text-align:center;
 }
 
 .card{
 background:white;
 color:#333;
-padding:15px;
+padding:10px;
 border-radius:10px;
 margin:10px 0;
 }
 
+.timer{
+font-size:40px;
+font-weight:bold;
+}
+
 input{
 width:90%;
-padding:10px;
+padding:8px;
 margin:5px 0;
 border:none;
-border-radius:8px;
+border-radius:6px;
 }
 
 button{
-padding:10px 20px;
+padding:8px 16px;
+margin:4px;
 border:none;
-border-radius:10px;
+border-radius:8px;
 background:#ff6b6b;
 color:white;
 cursor:pointer;
-margin:5px;
+}
+
+.progress{
+background:#ddd;
+height:20px;
+border-radius:10px;
+overflow:hidden;
+}
+
+.bar{
+height:20px;
+width:0%;
+background:#4caf50;
 }
 
 #leaderboard{
@@ -63,7 +75,6 @@ background:white;
 color:#333;
 padding:10px;
 border-radius:10px;
-margin-top:10px;
 font-size:14px;
 }
 
@@ -74,6 +85,8 @@ font-size:14px;
 <body>
 
 <div class="container">
+
+<!-- LOGIN -->
 
 <div id="login">
 
@@ -90,33 +103,55 @@ font-size:14px;
 
 </div>
 
+<!-- APP -->
+
 <div id="app" style="display:none">
 
-<h2>📚 Study Pomodoro</h2>
+<h2>📚 Study App</h2>
 
 <p id="user"></p>
+
+<!-- TIMER -->
 
 <div id="mode">พร้อมเริ่ม</div>
 
 <div class="timer" id="timer">25:00</div>
 
+<button onclick="start()">Start</button> <button onclick="pause()">Pause</button> <button onclick="resume()">Resume</button>
+
 <div class="card" id="activity">
-กดเริ่มเพื่อสุ่มกิจกรรม
+กดสุ่มกิจกรรม
 </div>
+
+<button onclick="randomActivity()">สุ่มกิจกรรม</button>
 
 <div>
 Pomodoro วันนี้: <span id="count">0</span>
 </div>
 
-<button onclick="start()">Start</button> <button onclick="pause()">Pause</button> <button onclick="resume()">Resume</button>
+<!-- TRACKER -->
 
-<button onclick="logout()">Logout</button>
+<h3>📚 Reading Tracker</h3>
+
+<input id="book" placeholder="กำลังอ่านเรื่องอะไร">
+
+<input id="progressInput" type="number" min="0" max="100" placeholder="% ที่อ่าน">
+
+<button onclick="updateProgress()">Update</button>
+
+<div class="progress">
+<div id="bar" class="bar"></div>
+</div>
+
+<p id="status"></p>
+
+<!-- LEADERBOARD -->
 
 <h3>🏆 Leaderboard</h3>
 
-<div id="leaderboard">
-Loading...
-</div>
+<div id="leaderboard">Loading...</div>
+
+<button onclick="logout()">Logout</button>
 
 </div>
 
@@ -162,11 +197,12 @@ const db = getFirestore(app);
 
 const errorText=document.getElementById("error");
 
+/* LOGIN */
 
 window.login=function(){
 
-const email=document.getElementById("email").value
-const password=document.getElementById("password").value
+const email=emailInput.value
+const password=passwordInput.value
 
 signInWithEmailAndPassword(auth,email,password)
 
@@ -176,11 +212,12 @@ errorText.innerText=err.message
 
 }
 
+/* REGISTER */
 
 window.register=function(){
 
-const email=document.getElementById("email").value
-const password=document.getElementById("password").value
+const email=emailInput.value
+const password=passwordInput.value
 
 createUserWithEmailAndPassword(auth,email,password)
 
@@ -190,6 +227,7 @@ errorText.innerText=err.message
 
 }
 
+/* LOGOUT */
 
 window.logout=function(){
 
@@ -197,27 +235,29 @@ signOut(auth)
 
 }
 
+/* AUTH STATE */
 
 onAuthStateChanged(auth,(user)=>{
 
 if(user){
 
-document.getElementById("login").style.display="none"
-document.getElementById("app").style.display="block"
+login.style.display="none"
+app.style.display="block"
 
-document.getElementById("user").innerHTML="👤 "+user.email
+userText.innerHTML="👤 "+user.email
 
 loadLeaderboard()
 
 }else{
 
-document.getElementById("login").style.display="block"
-document.getElementById("app").style.display="none"
+login.style.display="block"
+app.style.display="none"
 
 }
 
 })
 
+/* TIMER */
 
 let focusTime=1500
 let breakTime=300
@@ -225,56 +265,20 @@ let breakTime=300
 let time=focusTime
 let isFocus=true
 let timer
-
 let count=0
 
-document.getElementById("count").innerHTML=count
-
-
-let studyActivities=[
-
-"📖 อ่านบทเรียน 5 หน้า",
-"📖 อ่านสไลด์ 10 หน้า",
-"📖 อ่านหัวข้อใหม่",
-"📖 ทบทวนบทเรียน",
-"🧠 อ่านแล้วสรุป"
-
-]
-
-let breakActivities=[
-
-"😴 หลับตาพัก",
-"💧 ดื่มน้ำ",
-"🧘 ยืดเส้น",
-"🚶 เดินรอบห้อง",
-"🌿 มองไกลๆ"
-
-]
-
-
-function random(list){
-
-return list[Math.floor(Math.random()*list.length)]
-
-}
-
+countText.innerHTML=count
 
 window.start=function(){
 
 clearInterval(timer)
 
-isFocus=true
-
 time=focusTime
-
-document.getElementById("activity").innerHTML=random(studyActivities)
-
-document.getElementById("mode").innerHTML="📖 โหมดอ่าน"
+isFocus=true
 
 timer=setInterval(update,1000)
 
 }
-
 
 window.pause=function(){
 
@@ -282,20 +286,18 @@ clearInterval(timer)
 
 }
 
-
 window.resume=function(){
 
 timer=setInterval(update,1000)
 
 }
 
-
 function update(){
 
 let min=Math.floor(time/60)
 let sec=time%60
 
-document.getElementById("timer").innerHTML=
+timerText.innerHTML=
 String(min).padStart(2,"0")+":"+String(sec).padStart(2,"0")
 
 time--
@@ -305,36 +307,59 @@ if(time<0){
 if(isFocus){
 
 count++
-document.getElementById("count").innerHTML=count
+countText.innerHTML=count
 
 saveStudyTime()
 
 isFocus=false
 time=breakTime
 
-document.getElementById("mode").innerHTML="😴 โหมดพัก"
-document.getElementById("activity").innerHTML=random(breakActivities)
-
 }else{
 
 isFocus=true
 time=focusTime
 
-document.getElementById("mode").innerHTML="📖 โหมดอ่าน"
-document.getElementById("activity").innerHTML=random(studyActivities)
-
 }
 
 }
 
 }
 
+/* RANDOM */
+
+let activities=[
+"อ่านต่ออีก 5 หน้า",
+"ทบทวนโน้ต",
+"พักสายตา",
+"ลุกเดิน",
+"ดื่มน้ำ"
+]
+
+window.randomActivity=function(){
+
+activity.innerHTML=
+activities[Math.floor(Math.random()*activities.length)]
+
+}
+
+/* TRACKER */
+
+window.updateProgress=function(){
+
+let book=bookInput.value
+let percent=progressInput.value
+
+bar.style.width=percent+"%"
+
+status.innerHTML="กำลังอ่าน: "+book+" ("+percent+"%)"
+
+}
+
+/* FIRESTORE */
 
 async function saveStudyTime(){
 
 const user=auth.currentUser
-
-if(!user) return
 
 const ref=doc(db,"leaderboard",user.uid)
 
@@ -359,10 +384,9 @@ loadLeaderboard()
 
 }
 
-
 async function loadLeaderboard(){
 
-const querySnapshot = await getDocs(collection(db,"leaderboard"))
+const querySnapshot=await getDocs(collection(db,"leaderboard"))
 
 let list=[]
 
@@ -376,11 +400,11 @@ let html=""
 
 list.forEach((p,i)=>{
 
-html+= (i+1)+". "+p.email+" - "+p.time+" นาที<br>"
+html+=(i+1)+". "+p.email+" - "+p.time+" นาที<br>"
 
 })
 
-document.getElementById("leaderboard").innerHTML=html
+leaderboard.innerHTML=html
 
 }
 
