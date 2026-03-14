@@ -3,68 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Dashboard Pro</title>
+    <title>Biotech Study Dashboard Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <style>
-        :root { --primary: #4facfe; --secondary: #00f2fe; --accent: #ff6b6b; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; color: white; }
-        .container { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin: 20px; }
-        h2, h3 { margin-top: 0; }
-        input { width: calc(100% - 20px); padding: 10px; margin: 10px 0; border: none; border-radius: 8px; }
-        button { padding: 10px 20px; border: none; border-radius: 8px; background: var(--accent); color: white; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px; }
-        button:hover { opacity: 0.8; transform: translateY(-2px); }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .timer { font-size: 48px; font-weight: bold; margin: 20px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
-        .progress-container { background: rgba(255,255,255,0.3); height: 20px; border-radius: 10px; overflow: hidden; margin: 15px 0; }
-        .bar { height: 100%; width: 0%; background: #4caf50; transition: width 0.5s ease; }
-        #leaderboard { background: white; color: #333; padding: 15px; border-radius: 12px; text-align: left; max-height: 200px; overflow-y: auto; }
-        #calendar { background: white; color: black; border-radius: 12px; padding: 10px; margin-top: 20px; font-size: 0.8em; }
-        .error { color: #ffeb3b; font-size: 0.9em; margin-bottom: 10px; }
+        :root { --primary: #4facfe; --secondary: #00f2fe; --accent: #ff6b6b; --dark: #2d3436; --success: #00eb84; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0; min-height: 100vh; display: flex; justify-content: center; padding: 20px; color: white; }
+        .container { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); padding: 30px; border-radius: 24px; width: 100%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        
+        input, select { width: calc(100% - 24px); padding: 12px; margin: 8px 0; border: none; border-radius: 10px; font-size: 14px; }
+        button { padding: 12px 20px; border: none; border-radius: 10px; background: var(--accent); color: white; cursor: pointer; font-weight: 600; transition: 0.2s; margin: 4px; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:disabled { background: #95a5a6; cursor: not-allowed; }
+
+        .timer-display { font-size: 64px; font-weight: bold; margin: 10px 0; text-align: center; text-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+        .progress-bar { background: rgba(255,255,255,0.3); height: 12px; border-radius: 6px; overflow: hidden; margin: 10px 0; }
+        .bar-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .card { background: white; color: var(--dark); padding: 15px; border-radius: 15px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card-val { font-size: 22px; font-weight: bold; color: var(--accent); }
+        
+        #leaderboard, #calendar { background: white; color: var(--dark); border-radius: 15px; padding: 15px; margin-top: 15px; }
+        .error-text { color: #ffeaa7; font-size: 13px; margin-bottom: 10px; text-align: center; }
+        hr { border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 25px 0; }
+        .label-group { font-size: 14px; font-weight: 600; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="login-section">
-        <h2>🔐 เข้าสู่ระบบ</h2>
-        <input id="email" type="email" placeholder="อีเมล">
+    <div id="auth-ui">
+        <h2 style="text-align: center;">🧬 Biotech Dashboard</h2>
+        <input id="email" type="email" placeholder="อีเมลนักศึกษา">
         <input id="password" type="password" placeholder="รหัสผ่าน">
-        <div id="error-msg" class="error"></div>
-        <button onclick="handleAuth('login')">เข้าสู่ระบบ</button>
-        <button onclick="handleAuth('register')" style="background: transparent; border: 1px solid white;">ลงทะเบียน</button>
+        <div id="auth-error" class="error-text"></div>
+        <div style="display: flex; justify-content: center;">
+            <button onclick="authAction('login')">เข้าสู่ระบบ</button>
+            <button onclick="authAction('reg')" style="background:transparent; border:1px solid white;">ลงทะเบียน</button>
+        </div>
     </div>
 
-    <div id="app-section" style="display:none">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <span id="user-display">👤 </span>
-            <button onclick="logout()" style="padding: 5px 10px; font-size: 12px;">ออกกำลัง</button>
+    <div id="app-ui" style="display:none">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <small id="user-mail" style="background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;"></small>
+            <button onclick="logout()" style="padding: 5px 12px; font-size: 11px; margin: 0;">ออกจากระบบ</button>
         </div>
 
-        <div class="timer" id="timer-display">25:00</div>
-        <button id="start-btn" onclick="startTimer()">เริ่ม</button>
-        <button onclick="pauseTimer()">พัก</button>
-        <button onclick="resetTimer()" style="background:#666">รีเซ็ต</button>
-        <p>Pomodoro วันนี้: <span id="pomo-count">0</span> รอบ</p>
+        <div class="timer-display" id="clock">25:00</div>
+        <div style="text-align:center;">
+            <button id="btn-start" onclick="timerStart()">เริ่มโฟกัส</button>
+            <button onclick="timerPause()">พัก</button>
+            <button onclick="timerReset()" style="background:#636e72">รีเซ็ต</button>
+        </div>
+        <p style="text-align:center; font-size: 14px;">วันนี้สำเร็จ: <b id="pomo-count">0</b> รอบ</p>
 
         <hr>
-        
-        <h3>📖 ติดตามการอ่าน</h3>
-        <input id="book-name" placeholder="ชื่อหนังสือที่อ่าน">
-        <input id="read-percent" type="number" min="0" max="100" placeholder="ความคืบหน้า (%)">
-        <button onclick="updateReadingProgress()">อัปเดต</button>
-        <div class="progress-container">
-            <div id="progress-bar" class="bar"></div>
-        </div>
-        <p id="reading-status" style="font-size: 0.9em;"></p>
 
-        <h3>🏆 อันดับนักอ่าน</h3>
+        <h3>⏳ นับถอยหลังวันสอบ</h3>
+        <div style="display:flex; gap:5px; flex-wrap: wrap;">
+            <input id="ex-name" placeholder="ชื่อวิชา (เช่น Microbiology)" style="flex:1; min-width: 120px;">
+            <input id="ex-date" type="date" style="flex:1; min-width: 120px;">
+            <button onclick="addExam()" style="background:#fdcb6e; width: 100%;">เพิ่มกำหนดการสอบ</button>
+        </div>
+        <div id="exam-list" class="grid-container"></div>
+
+        <hr>
+
+        <h3>📖 ติดตามการอ่าน</h3>
+        <input id="bk-title" placeholder="วิชา/หนังสือที่กำลังอ่าน">
+        <input id="bk-perc" type="number" max="100" placeholder="ความคืบหน้า (%)">
+        <button onclick="saveProgress()" style="width:100%; margin: 10px 0; background: var(--success);">อัปเดตสถานะ</button>
+        <div class="progress-bar"><div id="bk-bar" class="bar-fill"></div></div>
+        <small id="bk-status" style="font-style: italic;"></small>
+
+        <hr>
+
+        <h3>🏆 อันดับนักอ่าน (Top 5)</h3>
         <div id="leaderboard">กำลังโหลด...</div>
 
-        <h3>📅 แผนการเรียน</h3>
-        <input id="event-title" placeholder="ชื่อวิชา/งาน">
-        <input id="event-date" type="date">
-        <button onclick="addNewEvent()">เพิ่มตาราง</button>
+        <hr>
+
+        <h3>📅 ตารางงานและโปรเจกต์</h3>
+        <input id="cal-title" placeholder="ชื่องาน/แล็บ">
+        <input id="cal-date" type="date">
+        <button onclick="saveEvent()" style="width:100%; margin: 10px 0; background:#0984e3;">บันทึกลงปฏิทิน</button>
         <div id="calendar"></div>
     </div>
 </div>
@@ -72,7 +95,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBdGbhUgZ2XcjF1FnXDQQD1LWYGMdyQnQc",
@@ -87,158 +110,157 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let countdown;
-    let timeLeft = 1500;
-    let calendar;
+    let timerInt;
+    let secondsLeft = 1500;
+    let cal;
 
     // --- Authentication ---
-    window.handleAuth = async (type) => {
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        const errorDiv = document.getElementById("error-msg");
+    window.authAction = async (t) => {
+        const e = document.getElementById("email").value;
+        const p = document.getElementById("password").value;
+        if(!e || !p) return;
         try {
-            if (type === 'login') await signInWithEmailAndPassword(auth, email, password);
-            else await createUserWithEmailAndPassword(auth, email, password);
-            errorDiv.innerText = "";
-        } catch (err) {
-            errorDiv.innerText = "เกิดข้อผิดพลาด: " + err.message;
-        }
+            if(t==='login') await signInWithEmailAndPassword(auth, e, p);
+            else await createUserWithEmailAndPassword(auth, e, p);
+        } catch (err) { document.getElementById("auth-error").innerText = "ผิดพลาด: " + err.message; }
     };
-
     window.logout = () => signOut(auth);
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("app-section").style.display = "block";
-            document.getElementById("user-display").innerText = `👤 ${user.email}`;
-            initApp();
+    onAuthStateChanged(auth, (u) => {
+        if(u) {
+            document.getElementById("auth-ui").style.display="none";
+            document.getElementById("app-ui").style.display="block";
+            document.getElementById("user-mail").innerText = "👤 " + u.email;
+            initDashboard();
         } else {
-            document.getElementById("login-section").style.display = "block";
-            document.getElementById("app-section").style.display = "none";
+            document.getElementById("auth-ui").style.display="block";
+            document.getElementById("app-ui").style.display="none";
         }
     });
 
     // --- Pomodoro Logic ---
-    window.startTimer = () => {
-        clearInterval(countdown);
-        document.getElementById("start-btn").disabled = true;
-        countdown = setInterval(() => {
-            timeLeft--;
-            updateTimerDisplay();
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                handlePomoComplete();
+    window.timerStart = () => {
+        clearInterval(timerInt);
+        document.getElementById("btn-start").disabled = true;
+        timerInt = setInterval(() => {
+            secondsLeft--;
+            renderTime();
+            if(secondsLeft <= 0) {
+                clearInterval(timerInt);
+                completePomo();
             }
         }, 1000);
     };
-
-    window.pauseTimer = () => {
-        clearInterval(countdown);
-        document.getElementById("start-btn").disabled = false;
-    };
-
-    window.resetTimer = () => {
-        pauseTimer();
-        timeLeft = 1500;
-        updateTimerDisplay();
-    };
-
-    function updateTimerDisplay() {
-        const min = Math.floor(timeLeft / 60);
-        const sec = timeLeft % 60;
-        document.getElementById("timer-display").innerText = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    window.timerPause = () => { clearInterval(timerInt); document.getElementById("btn-start").disabled = false; };
+    window.timerReset = () => { timerPause(); secondsLeft = 1500; renderTime(); };
+    function renderTime() {
+        const m = Math.floor(secondsLeft/60);
+        const s = secondsLeft%60;
+        document.getElementById("clock").innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
-
-    async function handlePomoComplete() {
-        const user = auth.currentUser;
-        const ref = doc(db, "pomodoro", user.uid);
+    async function completePomo() {
+        const ref = doc(db, "pomodoro", auth.currentUser.uid);
         const snap = await getDoc(ref);
-        let count = snap.exists() ? (snap.data().count || 0) : 0;
-        count++;
-        await setDoc(ref, { count: count }, { merge: true });
-        document.getElementById("pomo-count").innerText = count;
-        alert("เก่งมาก! พักสายตาซักครู่นะ");
-        resetTimer();
+        let c = (snap.exists() ? (snap.data().count || 0) : 0) + 1;
+        await setDoc(ref, { count: c }, { merge: true });
+        alert("🎉 เก่งมาก! จบไปอีก 1 รอบแล้ว");
+        timerReset();
     }
 
-    // --- Reading Progress ---
-    window.updateReadingProgress = async () => {
-        const book = document.getElementById("book-name").value;
-        const percent = parseInt(document.getElementById("read-percent").value);
-        if (!book || isNaN(percent)) return;
+    // --- Exam Countdown Logic ---
+    window.addExam = async () => {
+        const t = document.getElementById("ex-name").value;
+        const d = document.getElementById("ex-date").value;
+        if(t && d) {
+            await addDoc(collection(db,"exams"), { uid: auth.currentUser.uid, title: t, date: d });
+            document.getElementById("ex-name").value = "";
+            document.getElementById("ex-date").value = "";
+        }
+    };
+    window.removeExam = async (id) => { if(confirm("ลบกำหนดการสอบนี้ใช่ไหม?")) await deleteDoc(doc(db,"exams",id)); };
 
-        const user = auth.currentUser;
-        await setDoc(doc(db, "progress", user.uid), {
-            email: user.email,
-            book: book,
-            percent: percent,
-            updatedAt: new Date()
-        });
+    // --- Progress & Events Logic ---
+    window.saveProgress = async () => {
+        const t = document.getElementById("bk-title").value;
+        const p = parseInt(document.getElementById("bk-perc").value);
+        if(t && !isNaN(p)) {
+            await setDoc(doc(db,"progress",auth.currentUser.uid), { 
+                email: auth.currentUser.email, 
+                book: t, 
+                percent: p,
+                updatedAt: new Date()
+            });
+        }
+    };
+    window.saveEvent = async () => {
+        const t = document.getElementById("cal-title").value;
+        const d = document.getElementById("cal-date").value;
+        if(t && d) {
+            await addDoc(collection(db,"events"), { uid: auth.currentUser.uid, title: t, date: d });
+            document.getElementById("cal-title").value = "";
+            document.getElementById("cal-date").value = "";
+        }
     };
 
-    // --- Calendar & Events ---
-    async function initCalendar() {
-        const calendarEl = document.getElementById('calendar');
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            height: 'auto',
-            headerToolbar: { left: 'prev', center: 'title', right: 'next' }
-        });
-        calendar.render();
-        loadUserEvents();
-    }
+    // --- Core Sync System (Fix Refreshed Data Loss) ---
+    function initDashboard() {
+        // 1. Initialize Calendar
+        if (!cal) {
+            cal = new FullCalendar.Calendar(document.getElementById('calendar'), { 
+                initialView: 'dayGridMonth', 
+                height: 'auto',
+                headerToolbar: { left: 'prev', center: 'title', right: 'next' }
+            });
+            cal.render();
+        }
 
-    async function loadUserEvents() {
-        const user = auth.currentUser;
-        const q = query(collection(db, "events"), where("uid", "==", user.uid));
-        onSnapshot(q, (snapshot) => {
-            calendar.removeAllEvents();
-            snapshot.forEach(doc => {
-                calendar.addEvent({ title: doc.data().title, start: doc.data().date });
+        // 2. Auto-load Events
+        onSnapshot(query(collection(db,"events"), where("uid","==",auth.currentUser.uid)), s => {
+            cal.removeAllEvents();
+            s.forEach(d => cal.addEvent({ title: d.data().title, start: d.data().date }));
+        });
+
+        // 3. Auto-load Exams
+        onSnapshot(query(collection(db,"exams"), where("uid","==",auth.currentUser.uid)), s => {
+            const el = document.getElementById("exam-list");
+            el.innerHTML = "";
+            s.forEach(d => {
+                const diff = Math.ceil((new Date(d.data().date) - new Date()) / 86400000);
+                el.innerHTML += `
+                    <div class="card">
+                        <span onclick="removeExam('${d.id}')" style="float:right;cursor:pointer;color:#ccc;font-size:12px;">✖</span>
+                        <small style="display:block;margin-bottom:5px;">${d.data().title}</small>
+                        <div class="card-val">${diff > 0 ? diff+' วัน' : (diff === 0 ? 'วันนี้!' : 'สอบแล้ว')}</div>
+                    </div>`;
             });
         });
-    }
 
-    window.addNewEvent = async () => {
-        const title = document.getElementById("event-title").value;
-        const date = document.getElementById("event-date").value;
-        if (!title || !date) return;
-
-        await addDoc(collection(db, "events"), {
-            uid: auth.currentUser.uid,
-            title: title,
-            date: date
-        });
-        document.getElementById("event-title").value = "";
-    };
-
-    // --- Sync Data ---
-    function initApp() {
-        initCalendar();
-        
-        // Load Leaderboard
-        onSnapshot(collection(db, "progress"), (snap) => {
-            let list = [];
-            snap.forEach(doc => list.push(doc.data()));
-            list.sort((a, b) => b.percent - a.percent);
-            document.getElementById("leaderboard").innerHTML = list.map((p, i) => 
-                `<div>${i+1}. <b>${p.email.split('@')[0]}</b>: ${p.book} (${p.percent}%)</div>`
-            ).join('<br>');
-        });
-
-        // Load Personal Progress
-        onSnapshot(doc(db, "progress", auth.currentUser.uid), (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                document.getElementById("progress-bar").style.width = data.percent + "%";
-                document.getElementById("reading-status").innerText = `กำลังอ่าน: ${data.book}`;
+        // 4. Auto-load Personal Reading Progress
+        onSnapshot(doc(db,"progress",auth.currentUser.uid), s => {
+            if(s.exists()){
+                const d = s.data();
+                document.getElementById("bk-bar").style.width = d.percent+"%";
+                document.getElementById("bk-status").innerText = `สถานะ: ${d.book} (${d.percent}%)`;
+                document.getElementById("bk-title").value = d.book;
+                document.getElementById("bk-perc").value = d.percent;
             }
         });
 
-        // Load Pomo Count
-        onSnapshot(doc(db, "pomodoro", auth.currentUser.uid), (snap) => {
-            if (snap.exists()) document.getElementById("pomo-count").innerText = snap.data().count;
+        // 5. Auto-load Leaderboard (Top 5)
+        onSnapshot(collection(db,"progress"), s => {
+            let l = []; s.forEach(d => l.push(d.data()));
+            l.sort((a,b)=>b.percent-a.percent);
+            document.getElementById("leaderboard").innerHTML = l.slice(0,5).map((p,i)=>
+                `<div style="margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:4px;">
+                    <b>${i+1}.</b> ${p.email.split('@')[0]} <span style="color:var(--success); float:right;">${p.percent}%</span>
+                    <br><small style="color:#666">${p.book}</small>
+                </div>`
+            ).join('');
+        });
+
+        // 6. Auto-load Pomodoro Count
+        onSnapshot(doc(db,"pomodoro",auth.currentUser.uid), s => { 
+            if(s.exists()) document.getElementById("pomo-count").innerText = s.data().count || 0; 
         });
     }
 </script>
