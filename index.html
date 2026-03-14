@@ -109,48 +109,80 @@ Pomodoro วันนี้: <span id="count">0</span>
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth,
+import {
+getAuth,
 signInWithEmailAndPassword,
 createUserWithEmailAndPassword,
 signOut,
 onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+
+/* 🔧 ใส่ config จาก Firebase Console ตรงนี้ */
 const firebaseConfig = {
-apiKey:"AIzaSyBdGbhU6Z2XciF1EnXDQD1LVWGMdyOnQc",
-authDomain:"mumi-chat-f752d.firebaseapp.com",
-projectId:"mumi-chat-f752d",
-storageBucket:"mumi-chat-f752d.appspot.com",
-messagingSenderId:"753963622178",
-appId:"1:753963622178:web:172ee93da98c1a97bb0f7b"
+  apiKey: "AIzaSyBdGbhUgZ2XcjF1FnXDQQD1LWYGMdyQnQc",
+  authDomain: "mumi-chat-f752d.firebaseapp.com",
+  projectId: "mumi-chat-f752d",
+  storageBucket: "mumi-chat-f752d.firebasestorage.app",
+  messagingSenderId: "753963622178",
+  appId: "1:753963622178:web:172ee93da98c1a97bb0f7b"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
 
-window.login=function(){
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-const email=document.getElementById("email").value
-const password=document.getElementById("password").value
+
+/* LOGIN */
+
+window.login = function(){
+
+const email = document.getElementById("email").value
+const password = document.getElementById("password").value
 
 signInWithEmailAndPassword(auth,email,password)
 
+.then(()=>{
+alert("Login สำเร็จ")
+})
+
+.catch(err=>{
+alert(err.message)
+})
+
 }
 
-window.register=function(){
 
-const email=document.getElementById("email").value
-const password=document.getElementById("password").value
+/* REGISTER */
+
+window.register = function(){
+
+const email = document.getElementById("email").value
+const password = document.getElementById("password").value
 
 createUserWithEmailAndPassword(auth,email,password)
 
+.then(()=>{
+alert("สมัครสมาชิกสำเร็จ")
+})
+
+.catch(err=>{
+alert(err.message)
+})
+
 }
 
-window.logout=function(){
+
+/* LOGOUT */
+
+window.logout = function(){
 
 signOut(auth)
 
 }
+
+
+/* ตรวจสอบสถานะ login */
 
 onAuthStateChanged(auth,(user)=>{
 
@@ -158,6 +190,7 @@ if(user){
 
 document.getElementById("login").style.display="none"
 document.getElementById("app").style.display="block"
+
 document.getElementById("user").innerHTML="👤 "+user.email
 
 }else{
@@ -169,6 +202,7 @@ document.getElementById("app").style.display="none"
 
 })
 
+</script>
 let focusTime=1500
 let breakTime=300
 
