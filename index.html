@@ -2,216 +2,133 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>วงล้อสุ่มกิจกรรม</title>
+<title>สุ่มกิจกรรมอ่านหนังสือ</title>
 
 <style>
 
 body{
-font-family: Arial;
-background:linear-gradient(135deg,#667eea,#764ba2);
+font-family: system-ui;
+background:linear-gradient(135deg,#5f9cff,#7b5cff);
+height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-height:100vh;
 margin:0;
 color:white;
-text-align:center;
 }
 
 .container{
-background:rgba(255,255,255,0.1);
-padding:30px;
-border-radius:20px;
+text-align:center;
 }
 
-canvas{
+.card{
+width:320px;
+height:180px;
 background:white;
-border-radius:50%;
+color:#333;
+border-radius:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+padding:20px;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+transition:0.3s;
 }
 
 button{
-margin-top:20px;
-padding:12px 30px;
+margin-top:25px;
+padding:14px 28px;
 font-size:18px;
 border:none;
-border-radius:10px;
+border-radius:12px;
 background:#ff6b6b;
 color:white;
 cursor:pointer;
 }
 
-#result{
-margin-top:15px;
-font-size:20px;
+button:hover{
+transform:scale(1.05);
 }
 
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<h2>🎡 วงล้อสุ่มชีวิต</h2>
+<h2>📚 สุ่มกิจกรรมอ่านหนังสือ</h2>
 
-<canvas id="wheel" width="320" height="320"></canvas>
+<div class="card" id="card">
+กดสุ่มเพื่อเริ่ม
+</div>
 
-<br>
-
-<button onclick="spin()">หมุนวงล้อ</button>
-
-<div id="result"></div>
+<button onclick="randomActivity()">สุ่มกิจกรรม</button>
 
 </div>
 
 <script>
 
-let activities = [
+let activities=[
 
-"📚 ทำงาน 25 นาที",
-"📚 ทำงาน 20 นาที",
-"📚 ทำงาน 15 นาที",
-"📚 ทำงาน 10 นาที",
-"🔥 ทำงานต่อทันที",
-"🧠 ทำการบ้าน 1 ข้อ",
-"🧠 ทำงานอีก 1 task",
-"📝 เขียนโน้ต 1 ย่อหน้า",
-"📊 ทำรายงาน 1 หน้า",
 "📖 อ่านหนังสือ 5 นาที",
+"📖 อ่านหนังสือ 10 นาที",
+"📖 อ่านสไลด์ 3 หน้า",
+"📖 อ่านบทเรียน 1 หน้า",
+"📖 ทบทวนโน้ตที่จดไว้",
+
+"🧠 อ่านแล้วสรุป 3 บรรทัด",
+"🧠 อ่านแล้วจดโน้ตเพิ่ม",
+"🧠 อ่านแล้วตั้งคำถาม 1 ข้อ",
 
 "😴 พัก 5 นาที",
-"😴 พัก 10 นาที",
-"🛏 พักสายตา 3 นาที",
+"😴 พักสายตา 2 นาที",
+"🛏 หลับตาพัก",
 
-"📱 เล่นมือถือ 3 นาที",
-"📱 เล่นมือถือ 5 นาที",
-"😂 ดู meme",
-"😂 เปิด TikTok 2 นาที",
-"🎮 เล่นเกม 1 ตา",
-
-"🚶 ลุกไปเดิน",
-"🚶 เดิน 2 นาที",
+"🧘 ยืดเส้น 2 นาที",
 "🚶 เดินรอบห้อง",
-"🧘 ยืดเส้น",
-"💪 วิดพื้น 10 ครั้ง",
+"🚶 ลุกไปเดิน 1 นาที",
 
 "💧 ดื่มน้ำ",
-"🍎 กินผลไม้",
-"🍪 กินขนม",
+"🍪 กินขนมเล็กน้อย",
 "☕ ชงเครื่องดื่ม",
 
 "🎵 ฟังเพลง 1 เพลง",
-"🎵 ฟังเพลง 2 เพลง",
-"🎧 เปิดเพลงแล้วทำงานต่อ",
+"🎧 เปิดเพลงแล้วพัก",
 
-"🧹 เก็บโต๊ะ",
-"🧹 จัดของ 1 อย่าง",
+"📱 เล่นมือถือ 3 นาที",
 
-"🧠 คิดไอเดียใหม่",
-"📖 อ่านอะไรสั้น ๆ",
+"🌿 มองออกไปนอกหน้าต่าง",
+"🌿 สูดอากาศลึก ๆ",
 
-"🔥 ทำงานเพิ่มอีก 30 นาที",
-"🔥 ทำงานเพิ่มอีก 15 นาที",
+"📚 กลับไปอ่านต่อ",
+"📚 อ่านอีก 2 หน้า",
+"📚 อ่านต่ออีก 10 นาที",
 
-"🎲 สุ่มใหม่",
-"🎲 หมุนอีกครั้ง",
-
-"😈 ไม่มีพัก ทำงานต่อ",
-"😈 ทำงานเพิ่มอีก 10 นาที",
-
-"💻 เปิดงานที่ค้างไว้",
-"📋 เช็ค To-Do list",
-"📅 วางแผนงาน",
-
-"🌿 ออกไปสูดอากาศ",
-"🪑 ลุกจากเก้าอี้",
-
-"😆 โทรหาเพื่อน",
-"📷 ถ่ายรูปอะไรสักอย่าง",
-
-"🚀 กลับไปโฟกัสงาน"
+"🔥 โฟกัสอ่านทันที",
+"🔥 อ่านต่อ 15 นาที"
 
 ];
 
-let canvas = document.getElementById("wheel");
-let ctx = canvas.getContext("2d");
+function randomActivity(){
 
-let angle = 0;
-let spinning = false;
+let card=document.getElementById("card");
 
-function drawWheel(){
+card.style.transform="scale(0.8)";
 
-let arc = (2*Math.PI)/activities.length;
+setTimeout(()=>{
 
-for(let i=0;i<activities.length;i++){
+let r=Math.floor(Math.random()*activities.length);
 
-let start = angle + i*arc;
-let end = start + arc;
+card.innerHTML=activities[r];
 
-ctx.beginPath();
-ctx.moveTo(160,160);
-ctx.arc(160,160,160,start,end);
-ctx.fillStyle = `hsl(${i*360/activities.length},70%,60%)`;
-ctx.fill();
+card.style.transform="scale(1)";
 
-ctx.save();
-ctx.translate(160,160);
-ctx.rotate(start + arc/2);
-ctx.fillStyle="black";
-ctx.font="12px Arial";
-ctx.fillText(activities[i],80,5);
-ctx.restore();
+},200);
 
 }
-
-}
-
-function spin(){
-
-if(spinning) return;
-
-spinning = true;
-
-let spinAngle = Math.random()*10 + 20;
-let duration = 3000;
-
-let start = null;
-
-function animate(time){
-
-if(!start) start=time;
-
-let progress = time-start;
-
-angle += spinAngle*0.02;
-
-ctx.clearRect(0,0,320,320);
-
-drawWheel();
-
-if(progress < duration){
-
-requestAnimationFrame(animate);
-
-}else{
-
-spinning=false;
-
-let arc = (2*Math.PI)/activities.length;
-let index = Math.floor((activities.length - (angle%(2*Math.PI))/arc)) % activities.length;
-
-document.getElementById("result").innerHTML =
-"ผลลัพธ์: "+activities[index];
-
-}
-
-}
-
-requestAnimationFrame(animate);
-
-}
-
-drawWheel();
 
 </script>
 
